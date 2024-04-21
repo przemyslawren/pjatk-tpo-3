@@ -25,10 +25,21 @@ public class MainServer {
        try {
            while (true) {
                Socket clientSocket = serverSocket.accept();
-               threadPool.execute(new ClientRequestHandler(clientSocket, languagePorts));
+               threadPool.execute(new ClientRequestHandler(clientSocket, languagePorts, this));
            }
        } catch (IOException e) {
            e.printStackTrace();
+       }
+   }
+
+   public void createNewDictionary(String languageCode, int port) {
+       if (!languagePorts.containsKey(languageCode)) {
+           Map<String, String> newDictionary = new HashMap<>(); // Pusty słownik dla nowego języka
+           languagePorts.put(languageCode, port);
+           new DictionaryServer(languageCode, newDictionary, port);
+           System.out.println("New dictionary server for " + languageCode + " created on port " + port);
+       } else {
+           System.out.println("Dictionary for " + languageCode + " already exists.");
        }
    }
 

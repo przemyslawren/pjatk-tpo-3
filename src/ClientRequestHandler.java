@@ -8,10 +8,14 @@ import java.util.HashMap;
 public class ClientRequestHandler implements Runnable {
     private Socket clientSocket;
     private HashMap<String, Integer> languagePorts;
+    private MainServer mainServer;
 
-    public ClientRequestHandler(Socket clientSocket, HashMap<String, Integer> languagePorts) {
+    public ClientRequestHandler(Socket clientSocket,
+                                HashMap<String, Integer> languagePorts,
+                                MainServer mainServer) {
         this.clientSocket = clientSocket;
         this.languagePorts = languagePorts;
+        this.mainServer = mainServer;
     }
 
     @Override
@@ -20,15 +24,24 @@ public class ClientRequestHandler implements Runnable {
             BufferedReader input = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
             PrintWriter output = new PrintWriter(clientSocket.getOutputStream(), true);
 
-            String languageCode = input.readLine();
-            String word = input.readLine();
+            String action = input.readLine();
 
-            if (languagePorts.containsKey(languageCode)) {
-                int port = languagePorts.get(languageCode);
-                String translation = forwardRequestToDictionaryServer(word, languageCode, port);
-                output.println(translation);
+            if (action.equals("CREATE_DICTIONARY")) {
+                String languageCode = input.readLine();
+                int port = Integer.parseInt(input.readLine());
+                mainServer.createNewDictionary(languageCode, port);
+                output.println("New dictionary for " + languageCode + " created on port " + port);
             } else {
-                output.println("Error: Unsupported language code.");
+                String languageCode = action;  // Jeżeli nie CREATE_DICTIONARY, pierwsza linia to kod języka
+                String word = input.readLine();
+
+                if (languagePorts.containsKey(languageCode)) {
+                    int port = languagePorts.get(languageCode);
+                    String translation = forwardRequestToDictionaryServer(word, languageCode, port);
+                    output.println(translation);
+                } else {
+                    output.println("Error: Unsupported language code.");
+                }
             }
 
             clientSocket.close();
@@ -38,12 +51,11 @@ public class ClientRequestHandler implements Runnable {
     }
 
     private String forwardRequestToDictionaryServer(String word, String languageCode, int port) {
-        try {
-            Socket socket = new Socket("localhost", port);
+        try (Socket socket = new Socket("localhost", port);
             PrintWriter dictionaryOutput = new PrintWriter(socket
                     .getOutputStream(), true);
             BufferedReader dictionaryInput = new BufferedReader(new InputStreamReader(socket
-                    .getInputStream()));
+                    .getInputStream()))) {
 
             dictionaryOutput.println(word);
             return dictionaryInput.readLine();
