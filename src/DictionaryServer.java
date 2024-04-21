@@ -8,14 +8,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class DictionaryServer extends Thread {
-    private Map<String, String> dictionary;
     private ServerSocket serverSocket;
-    private String languageCode;
+    private Map<String, String> dictionary;
 
     public DictionaryServer(String languageCode,
                             Map<String, String> dictionary,
                             int port) {
-        this.languageCode = languageCode;
         this.dictionary = dictionary;
         try {
             this.serverSocket = new ServerSocket(port);
@@ -45,7 +43,9 @@ public class DictionaryServer extends Thread {
         }
         try {
             serverSocket.close();
-        } catch (Exception e) {}
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public static void main(String[] args) {

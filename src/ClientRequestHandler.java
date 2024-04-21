@@ -29,10 +29,19 @@ public class ClientRequestHandler implements Runnable {
             if (action.equals("CREATE_DICTIONARY")) {
                 String languageCode = input.readLine();
                 int port = Integer.parseInt(input.readLine());
-                mainServer.createNewDictionary(languageCode, port);
-                output.println("New dictionary for " + languageCode + " created on port " + port);
+                if (!languagePorts.containsValue(port)) {
+                    if (!languagePorts.containsKey(languageCode)) {
+                        mainServer.createNewDictionary(languageCode, port);
+                        output.println("New dictionary for "
+                                + languageCode + " created on port " + port);
+                    } else {
+                        output.println("Dictionary for " + languageCode + " already exists.");
+                    }
+                } else {
+                    output.println("Port is already taken.");
+                }
             } else {
-                String languageCode = action;  // Jeżeli nie CREATE_DICTIONARY, pierwsza linia to kod języka
+                String languageCode = action;
                 String word = input.readLine();
 
                 if (languagePorts.containsKey(languageCode)) {

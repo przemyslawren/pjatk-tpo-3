@@ -6,7 +6,7 @@ import java.net.Socket;
 public class Client {
     public static void main(String[] args) {
         String hostname = "localhost";
-        int port = 4000; // Port number on which the main server is listening
+        int port = 4000;
 
         try (Socket socket = new Socket(hostname, port)) {
             PrintWriter output = new PrintWriter(socket.getOutputStream(), true);

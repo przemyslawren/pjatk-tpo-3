@@ -15,16 +15,16 @@ import javafx.stage.Stage;
 
 public class ClientGUI extends Application {
 
-    private TextField languageCodeField = new TextField();
-    private TextField wordField = new TextField();
-    private Button translateButton = new Button("Translate");
-    private TextArea resultArea = new TextArea();
-    private Button createDictionaryButton = new Button("Create New Dictionary");
-    private TextField newLanguageCodeField = new TextField();
-    private TextField newDictionaryPortField = new TextField();
+    private final TextField languageCodeField = new TextField();
+    private final TextField wordField = new TextField();
+    private final Button translateButton = new Button("Translate");
+    private final TextArea resultArea = new TextArea();
+    private final Button createDictionaryButton = new Button("Create New Dictionary");
+    private final TextField newLanguageCodeField = new TextField();
+    private final TextField newDictionaryPortField = new TextField();
 
     @Override
-    public void start(Stage primaryStage) throws Exception {
+    public void start(Stage primaryStage) {
         primaryStage.setTitle("Dictionary Client");
 
         GridPane gridPane = new GridPane();
@@ -33,7 +33,7 @@ public class ClientGUI extends Application {
         gridPane.setHgap(10);
         gridPane.setAlignment(Pos.CENTER);
 
-        // Adding UI Components to the Grid
+
         gridPane.add(new Label("Language Code:"), 0, 0);
         gridPane.add(languageCodeField, 1, 0);
         gridPane.add(new Label("Word to Translate:"), 0, 1);
@@ -56,7 +56,18 @@ public class ClientGUI extends Application {
 
     private void createNewDictionary() {
         String languageCode = newLanguageCodeField.getText();
-        int port = Integer.parseInt(newDictionaryPortField.getText()); // Załóżmy, że port jest wymagany
+        String portText = newDictionaryPortField.getText();
+
+        if (ErrorHandler.isValidLanguageCode(languageCode)) {
+            resultArea.setText("Error: Invalid language code format.");
+            return;
+        }
+
+        if (!ErrorHandler.isValidPort(portText)) {
+            resultArea.setText("Error: Invalid port number.");
+            return;
+        }
+        int port = Integer.parseInt(portText);
         try (Socket socket = new Socket("localhost", 4000);
              PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
              BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
@@ -66,7 +77,7 @@ public class ClientGUI extends Application {
             out.println(port);
 
             String response = in.readLine();
-            resultArea.setText("Server Response: " + response);
+            resultArea.setText(response);
 
         } catch (Exception ex) {
             resultArea.setText("Error: " + ex.getMessage());
@@ -74,9 +85,25 @@ public class ClientGUI extends Application {
     }
 
     private void translateWord() {
-        String hostname = "localhost";
-        int port = 4000;
-        try (Socket socket = new Socket(hostname, port);
+        String languageCode = languageCodeField.getText();
+        String word = wordField.getText();
+
+        if (word.trim().isEmpty()) {
+            resultArea.setText("Error: Word field cannot be empty.");
+            return;
+        }
+
+        if (ErrorHandler.isValidLanguageCode(languageCode)) {
+            resultArea.setText("Error: Invalid language code format.");
+            return;
+        }
+
+        if (ErrorHandler.isNumeric(word)) {
+            resultArea.setText("Error: Word cannot be a number.");
+            return;
+        }
+
+        try (Socket socket = new Socket("localhost", 4000);
              PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
              BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
 

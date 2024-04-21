@@ -1,5 +1,4 @@
 import java.io.IOException;
-import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashMap;
@@ -8,9 +7,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class MainServer {
-   private ServerSocket serverSocket;
-   private HashMap<String, Integer> languagePorts;
-   private ExecutorService threadPool;
+   private final ServerSocket serverSocket;
+    private final ExecutorService threadPool;
+    private HashMap<String, Integer> languagePorts;
 
    public MainServer(int port) throws IOException {
        serverSocket = new ServerSocket(port);
@@ -34,7 +33,7 @@ public class MainServer {
 
    public void createNewDictionary(String languageCode, int port) {
        if (!languagePorts.containsKey(languageCode)) {
-           Map<String, String> newDictionary = new HashMap<>(); // Pusty słownik dla nowego języka
+           Map<String, String> newDictionary = new HashMap<>();
            languagePorts.put(languageCode, port);
            new DictionaryServer(languageCode, newDictionary, port);
            System.out.println("New dictionary server for " + languageCode + " created on port " + port);
